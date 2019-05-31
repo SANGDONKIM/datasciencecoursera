@@ -134,3 +134,156 @@ doc <- htmlTreeParse(fileUrl,useInternal=TRUE)
 teams <- xpathSApply(doc,"//li[@class='team-name']",xmlValue)
 teams   
 
+################################################################################################
+# day2 
+
+# json 포맷 불러오기
+
+library(jsonlite)
+jsonData <- fromJSON("https://api.github.com/users/jtleek/repos")
+names(jsonData)
+
+names(jsonData$owner)
+jsonData$owner$login
+
+
+jsonData[1:3, ]$owner$login
+jsonData[1:3, "owner"]$login
+jsonData$owner[1:3, "login"]
+jsonData$owner[1:3, ]$login
+
+
+# 데이터 프레임을 JSON 파일로 바꾸기 
+myjson <- toJSON(iris, pretty = T) # pretty = T : 들여쓰기 유무 
+
+iris2 <- fromJSON(myjson)
+head(iris2)
+
+
+# data.table 패키지 
+
+library(data.table)
+DF <- data.frame(x=rnorm(9), y=rep(c("a", "b", "c"), each=3), z=rnorm(9))
+head(DF, 3)
+
+DT = data.table(x=rnorm(9), y=rep(c("a", "b", "c"), each=3), z=rnorm(9))
+head(DT, 3)
+tables()
+
+DT[2, ]
+DT[DT$y=="a", ]
+DT[c(2,3)]
+
+DT[, c(2,3)]
+DT[, list(mean(x), sum(z))] # 계산할 때 list 활용
+
+DT[, table(y)]
+
+# mutate :=
+DT[, w:=z^2]
+DT
+
+DT2 <- DT
+DT[, y:=2]
+head(DT, 3)
+
+
+DT[, m:={tmp <- (x+z); log2(tmp+5)}]
+DT[, a:=x>0]
+DT[, b:=mean(x+w), by=a] 
+DT[, b:=NULL] # 칼럼 지우기 
+
+# .N : 마지막 행 반환
+set.seed(123);
+DT <- data.table(x=sample(letters[1:3], 1E5, TRUE))
+DT[, .N, by=x]
+DT
+
+# keys
+DT <- data.table(x=rep(c("a", "b", "c"), each=100), y=rnorm(300))
+DT
+setkey(DT, x)
+DT['a']
+
+DT1 <- data.table(x=c('a', 'a', 'b', 'dt1'), y=1:4)
+DT2 <- data.table(x=c('a', 'b', 'dt2'), z=5:7)
+setkey(DT1, x); setkey(DT2, x)
+merge(DT1, DT2)
+
+
+# fast reading 
+
+big_df <- data.frame(x=rnorm(1E6), y=rnorm(1E6))
+file <- tempfile()
+write.table(big_df, file=file, row.names = F, col.names = T, sep="\t", quote = F) 
+system.time(fread(file)) # 0.05초
+system.time((read.table(file, header = T, sep="\t"))) # 4초. 약 80배 빠름 
+
+
+# quiz
+
+# 100만 달러 이상 
+fileUrl <- "https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2Fss06hid.csv"
+download.file(fileUrl, destfile = "./data/survey.csv", method = "curl") 
+list.files("./data")
+dateDownloaded <- date()
+
+survey <- read.csv("./data/survey.csv")
+head(survey)
+
+library(tidyverse)
+survey %>% 
+        as_tibble() %>% 
+        group_by(VAL) %>% 
+        select(VAL) %>%
+        filter(VAL==24) %>% 
+        count()
+        
+survey %>% 
+        as_tibble() %>% 
+        select(FES)
+
+fileUrl <- "https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FDATA.gov_NGAP.xlsx"
+download.file(fileUrl, destfile = "./data/NGAP.xlsx", method = "curl")        
+NGAP <- readxl::read_xlsx("./data/NGAP.xlsx")
+dat <- as.data.frame(NGAP[c(18:22), c(6:15)])
+names(dat) <- c("City", "Zip", "CuCurrent", "PaCurrent", "PoCurrent", "Contact", "Ext", "Fax", "email Status")
+
+dat$Zip = as.numeric(dat$Zip)
+dat$Ext = as.numeric(dat$Ext)
+
+sum(dat$Zip*dat$Ext, na.rm = T)
+
+
+# xml 
+library(XML)
+fileUrl <- "https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2Frestaurants.xml"
+xml <-"./data/restaurant.xml"
+download.file(fileUrl, xml, quiet = TRUE)
+dat_xml<-xmlInternalTreeParse(xml)
+topNode<-xmlRoot(dat_xml) # obtain access to the top node
+topNode
+
+
+topNode[[1]]
+topNode[[1]][[1]]
+
+xmlSApply(topNode, xmlValue)
+
+
+xpathSApply(topNode, "//name", xmlValue)
+zipcode <- xpathSApply(topNode, "//zipcode", xmlValue)
+zipcode=zipcode %>% enframe(name = NULL) 
+zipcode$value=as.numeric(zipcode$value)
+nrow(zipcode[zipcode$value==21231,])
+
+
+fileUrl <- "https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2Fss06pid.csv"
+download.file(fileUrl, destfile = "./data/microdata.csv", method = "curl")
+DT <- fread("./data/microdata.csv")
+DT[,list(mean(pwgtp15))]
+
+
+
+
+
