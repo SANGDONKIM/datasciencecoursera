@@ -285,5 +285,74 @@ DT[,list(mean(pwgtp15))]
 
 
 
+###########################################################################################
+# day3
+
+# mySQL 
+
+library(RMySQL)
+
+# 데이터 베이스 접속 
+
+ucscDb <- dbConnect(MySQL(), user="genome", host="genome-mysql.cse.ucsc.edu")
+
+result <- dbGetQuery(ucscDb, "show databases;"); dbDisconnect(ucscDb);
+result
+
+hg19 <- dbConnect(MySQL(), user="genome", db="hg19", 
+                  host="genome-mysql.cse.ucsc.edu")
 
 
+# hg19 데이터 베이스 안에 테이블 목록 확인
+allTables <- dbListTables(hg19) 
+
+# 테이블이 갯수 확인
+length(allTables)   
+
+allTables[1:5] 
+
+
+# hg 19 데이터 베이스 안에 특정 테이블의 col_name 
+dbListFields(hg19, "affyU133Plus2")
+
+# 쿼리 호출
+dbGetQuery(hg19, "select count(*) from affyU133Plus2") # nrow
+
+# 수정이나 삭제의 경우 dbSendQuery 사용 
+# ex) dbSendQuery(conn, "delete from score)
+
+
+# hg19 DB에서 특정 테이블 블러오기
+affyData <- dbReadTable(hg19, "affyU133Plus2")  
+head(affyData)
+
+# select a specific subset 
+# DB안에 각 테이블의 용량이 커서 R로 불러오기 곤란할 수 있음 
+# 특정 테이블의 특정 부분만 추출하는 것이 필요 
+
+query <- dbSendQuery(hg19, "select * from affyU133Plus2 where misMatches between 1 and 3")
+affyMis <- fetch(query)
+quantile(affyMis$misMatches)
+
+affyMisSmall <- fetch(query, n=10)
+dbClearResult(query)
+dim(affyMisSmall)
+
+# DB 연결 종료 
+dbDisconnect(hg19) 
+
+# 서버에 엑세스하거나 데이터를 삭제 하지 말 것. 우선 SELECT 만 사용 
+
+
+# 내 데이터 베이스안에 데이터가 있는 경우 
+# mydb <- dbConnect(MySQL(), user="root", password="", dbname="DB에 저장된 데이터명")
+
+# 연결된 mydb에 show tables 쿼리을 보내서 자료를 가져오겠다는 의미. 문법은 sql과 동일     
+# result <- dbGetQuery(mydb, "show tables;"); dbDisconnect(ucscDb);
+
+hg19 <- dbConnect(MySQL(), user="genome", db="hg19", 
+                  host="genome-mysql.cse.ucsc.edu")
+
+
+# hg19 데이터 베이스 안에 테이블 목록 확인
+allTables <- dbListTables(hg19) 
