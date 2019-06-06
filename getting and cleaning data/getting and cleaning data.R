@@ -356,3 +356,93 @@ hg19 <- dbConnect(MySQL(), user="genome", db="hg19",
 
 # hg19 데이터 베이스 안에 테이블 목록 확인
 allTables <- dbListTables(hg19) 
+
+
+##################################################################################################
+# day4 
+
+# HDF5
+
+source("http://bioconductor.org/biocLite.R")
+biocLite("rhdf5")
+
+library(rhdf5)
+created <- h5createFile("example.h5")
+created
+
+# file 안에 그룹 만들기 
+created <- h5createGroup("example.h5", "foo")
+created <- h5createGroup("example.h5", "baa")
+created <- h5createGroup("example.h5", "foo/foobaa") # subgroup 
+h5ls("example.h5")
+
+A <- matrix(1:10, nrow=5, ncol=2)
+h5write(A, "example.h5", "foo/A")
+B <- array(seq(0.1, 2.0, by=0.1), dim=c(5, 2, 2))
+attr(B, "scale") <- "liter" # 속성 지정 
+h5write(B, "example.h5", "foo/foobaa/B")
+h5ls("example.h5")
+
+df <- data.frame(1L:5L, seq(0, 1, length.out = 5),
+                 c("ab", "cde", "fghi", "a", "s"), stringsAsFactors = F)
+df
+
+h5write(df, "example.h5", "df")
+h5ls("example.h5")
+
+
+# reading data
+
+readA=h5read("example.h5", "foo/A")
+readB=h5read("example.h5", "foo/foobaa/B")
+readdf=h5read("example.h5", "df")
+readA
+
+
+# writing and reading chunks
+
+# 1:3행 1열에 12, 13, 14로 값 바꾸기 
+h5write(c(12, 13, 14), "example.h5", "foo/A", index=list(1:3, 1))
+h5read("example.h5", "foo/A")
+
+h5read("example.h5", "foo/A", index = list(1:3, 1)) # index로 subset 가능 
+
+
+# reading data from the Web
+
+con <- url("http://scholar.google.com/citations?user=HI-I6C0AAAAJ&hl=en")
+htmlcode <- readLines(con)
+close(con)
+htmlcode
+
+library(XML)
+url <-  "http://scholar.google.com/citations?user=HI-I6C0AAAAJ&hl=en"
+html <- htmlTreeParse(url, useInternalNodes = T)
+xpathSApply(html, "//title", xmlValue)
+
+library(httr)
+html2=GET(url) # 웹 페이지 불러오기 
+content2=content(html2, as="text") # text로 추출
+content2
+
+parsedHtml=htmlParse(content2, asText = T) # html 형태로 변
+# parsing : 어떤 데이터를 다른 모양으로 가공하는 걸 의미
+parsedHtml
+xpathSApply(parsedHtml, "//title", xmlValue) # 원하는 항목의 자료(xmlValue)를 가져오기 
+
+
+# Accessing websites with passwords
+pg1=GET("http://httpbin.org/basic-auth/user/passwd")
+pg1
+
+pg2=GET("http://httpbin.org/basic-auth/user/passwd", 
+        authenticate("user", "passwd")) # id, password가 있을 경우 입력 
+pg2
+
+names(pg2)
+
+
+# 반복인증 없이 인증을 저장할 때 
+google=handle("http://google.com")
+pg1=GET(handle = google, path="/")
+pg2=GET(handle=google, path="search")
