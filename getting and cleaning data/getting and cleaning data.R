@@ -446,3 +446,74 @@ names(pg2)
 google=handle("http://google.com")
 pg1=GET(handle = google, path="/")
 pg2=GET(handle=google, path="search")
+
+
+
+###############################################################################################
+# day5
+
+# http 웹 페이지 불러올 때 
+library(httr) 
+
+myapp <- oauth_app("twitter", key = "yourConsumerKeyHere", secret = "yourConsumerSecretHere")
+sig <- sign_oauth1.0(myapp, 
+                     token = "YourTokenHere", 
+                     token_secret = "YourTokenSecretHere")
+
+# GET : 웹페이지 불러오기 
+homeTL <- GET("https://api.twitter.com/1.1/statuses/home_timeline.json", sig) 
+
+
+# 불러온 웹페이지 데이터를 json 양식으로 전환 
+json1=content(homeTL) # 서버에서 준 데이터 확인 
+json2=jsonlite::fromJSON(toJSON(json1))
+
+# 원하는 데이터 추출 
+json2[1, 1:4]
+
+
+# quiz
+
+library(sqldf)
+library(data.table)
+library(tidyverse)
+url <- "https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2Fss06pid.csv"
+
+path <- file.path("./getting and cleaning data/data", "sso6.csv")
+download.file(url, path)
+
+acs <- data.table(read.csv(path))
+acs
+
+q <- sqldf("select pwgtp1 from acs where AGEP<50")
+q
+
+
+uniq1=data.frame(unique(acs$AGEP))
+uniq2=sqldf("select distinct AGEP from acs")
+
+uniq1=arrange(uniq1)
+uniq2=arrange(uniq2)
+
+all.equal(uniq1, uniq2) # 어느 부분이 다른지 반환. identical()은 T, F만  
+
+
+
+con <- url("http://biostat.jhsph.edu/~jleek/contact.html")
+htmlcode <- readLines(con)
+close(con)
+c(nchar(htmlcode[10]), nchar(htmlcode[20]), nchar(htmlcode[30]), nchar(htmlcode[100]))
+
+url <- "https://d396qusza40orc.cloudfront.net/getdata%2Fwksst8110.for"
+dat <- readLines(url, n=10)
+dat
+
+
+# read.fwt() : 일정한 간격, 고정된 폭 구조의 외부 데이터 불러오기
+# sas 데이터 입력방식이랑 비슷함 
+
+dat <- read.fwf(url, skip=4, widths = c(12, 7, 4, 9, 4, 9, 4, 9, 4))
+head(dat)
+sum(dat[, 4])
+
+
