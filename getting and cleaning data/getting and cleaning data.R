@@ -517,3 +517,106 @@ head(dat)
 sum(dat[, 4])
 
 
+##################################################################################################
+# day6
+
+
+# subset and reorder
+set.seed(13435)
+X <- data.frame("var1"=sample(1:5), "var2"=sample(6:10), "var3"=sample(11:15))
+X
+X <- X[sample(1:5), ]
+X
+X$var2[c(1,3)] = NA
+X
+
+X[,1]; X[, "var1"]
+X[1:2, "var2"]
+
+X[(X$var1<=3 & X$var3>11), ]
+X[(X$var1<=3 | X$var3>15), ]
+X[(X$var1<=3 | X$var3>15), "var2"]
+
+X[(X$var2>8), ]
+X[which(X$var2>8), ] # which는 NA 반환 X 
+
+sort(X$var1)
+sort(X$var1, decreasing = T)
+sort(X$var2, na.last = T) # 정렬할 때 마지막 열에 NA 넣기 
+
+X[order(X$var1), ]
+X[order(X$var1, X$var3), ]
+
+
+library(tidyverse)
+arrange(X, var1)
+
+arrange(X, desc(var1))
+
+# adding rows and column
+
+X$var4 <- rnorm(5)
+X
+
+Y <- cbind(X, rnorm(5))
+Y <- cbind(X, "var5"=rnorm(5))
+Y
+
+names(Y)[5] <- c("var5")
+Y
+
+
+# getting the data from the web
+
+if (!file.exists("./getting and cleaning data/data")) {dir.create("./data")}
+fileUrl <- "https://data.baltimorecity.gov/api/views/k5ry-ef3g/rows.csv?accessType=DOWNLOAD"
+download.file(fileUrl, destfile = "./getting and cleaning data/data/restaurants.csv")
+restdata <- read.csv("./getting and cleaning data/data/restaurants.csv")
+
+
+head(restdata)
+summary(restdata)
+str(restdata)
+
+# quantile
+quantile(restdata$councilDistrict, na.rm = T)
+quantile(restdata$councilDistrict, probs = c(0.5, 0.75, 0.9))
+table(restdata$zipCode, useNA = "ifany") # 결측치 갯수 모두 표시 
+
+# check the NA
+sum(is.na(restdata$councilDistrict))
+any(is.na(restdata$councilDistrict))
+all(restdata$zipCode>-50000) # 조건을 모두 만족하면 T, 아니면 F
+
+colSums(is.na(restdata))
+all(colSums(is.na(restdata))==0)
+
+table(restdata$zipCode %in% c("21212", "21213"))
+
+restdata[restdata$zipCode %in% c("21212", "21213"), ]
+
+
+
+UCBAdmissions
+str(UCBAdmissions)
+
+DF=as.data.frame(UCBAdmissions)
+summary(DF)
+DF
+
+# cross tabs
+
+xt <- xtabs(Freq~Gender+Admit, data=DF)
+xt
+
+
+head(warpbreaks)
+warpbreaks$replicate <- rep(1:9, len=54)
+xt=xtabs(breaks~., data=warpbreaks)
+xt
+ftable(xt) # 범주 세개 이상 tavle 구성 
+
+fakedata=rnorm(1e5)
+object.size(fakedata)
+
+print(object.size(fakedata), units="Mb")
