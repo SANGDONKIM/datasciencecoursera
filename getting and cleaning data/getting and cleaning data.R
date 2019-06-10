@@ -620,3 +620,197 @@ fakedata=rnorm(1e5)
 object.size(fakedata)
 
 print(object.size(fakedata), units="Mb")
+
+
+par(mfrow=c(1,2))
+
+hist(-log(1-runif(10000)))
+hist(rexp(10000))
+
+
+###################################################################################
+# day7
+
+x <- c(1, 3, 8, 25, 100); 
+seq(along=x) # 1부터 시작하는 x의 length와 같은 x 변수 생성.  
+
+restdata <- read.csv("./getting and cleaning data/data/restaurants.csv")
+head(restdata)
+
+restdata$nearMe = restdata$neighborhood %in%c("Ronald park", "Homeland")
+restdata$zipWrong = ifelse(restdata$zipCode<0, T, F)
+
+
+
+# creating categorical variables
+
+restdata$zipGroups = cut(restdata$zipCode, breaks = quantile(restdata$zipCode)) 
+table(restdata$zipGroups)
+
+library(Hmisc)
+restdata$zipGroups = cut2(restdata$zipCode, g=4) # 4등분으로 나누기
+
+
+# factor() : 팩터 생성
+# as.factor() : 팩터로 변환 
+restdata$zcf = factor(restdata$zipCode)
+restdata$zcf[1:10]
+
+yesno = sample(c("yes", "no"), size=10, replace = T)
+
+yesnofac = factor(yesno)
+yesnofac # no, yes 순. 알파벳 순서로 지정되있음. 
+
+levels(yesnofac) <- c("yes", "no") # levels : level 순서 바꾸기
+yesnofac
+
+yesnofac = factor(yesno, levels = c("yes", "no")) # levels : level 순서 바꾸기  
+yesnofac
+
+
+relevel(yesnofac, ref="yes") # 기준 범주 지정 
+
+iris$Species1 <- factor(iris$Species, levels = c("versicolor","virginica","setosa")) # level 순서 변경
+str(iris)
+
+iris$Species2 <- relevel(iris$Species1, ref="virginica")
+str(iris)
+
+library(Hmisc)
+library(tidyverse)
+
+restdata2 = mutate(restdata, zipGroups=cut2(zipCode, g=4))
+
+# common transformation
+ceiling(3.75) # 올림
+ceiling(3.1)
+floor(3.75) # 내림
+round(3.75) # 반올림
+
+
+# reshaping 
+
+library(reshape2)
+head(mtcars)
+
+mtcars$carname <- rownames(mtcars)
+head(mtcars)
+
+carMelt <- melt(mtcars, id=c("carname", "gear", "cyl"), measure.vars = c("mpg", "hp")) 
+head(carMelt)
+
+
+# casting
+cylData <- dcast(carMelt, cyl~variable) # cyl 행, variable 열인 데이터 프레임 
+cylData
+
+cylData <- dcast(carMelt, cyl~variable, mean) # cyl 행, variable 열인 데이터 프레임에서 평균값 출력 
+cylData
+
+# averaging value
+library(stats)
+head(InsectSprays)
+
+tapply(InsectSprays$count, InsectSprays$spray, sum)
+spins = split(InsectSprays$count, InsectSprays$spray) # count 값을 spray 범주로 나눠라. 
+spins
+
+sprCount = lapply(spins, sum)
+sprCount
+unlist(sprCount)
+sapply(spins, sum)
+
+library(plyr)
+ddply(InsectSprays, .(spray), summarize, sum=sum(count))
+
+
+
+# merge
+
+fileUrl1 = "https://raw.githubusercontent.com/jtleek/dataanalysis/master/week2/007summarizingData/data/reviews.csv"
+fileUrl2 = "https://raw.githubusercontent.com/jtleek/dataanalysis/master/week2/007summarizingData/data/solutions.csv"
+download.file(fileUrl1, destfile = "./getting and cleaning data/data/reviews.csv")
+download.file(fileUrl1, destfile = "./getting and cleaning data/data/solutions.csv")
+
+reviews <- read.csv("./getting and cleaning data/data/reviews.csv")
+solutions <- read.csv("./getting and cleaning data/data/solutions.csv")
+
+head(reviews)
+head(solutions)
+
+names(reviews)
+names(solutions)
+
+mergedata = merge(reviews, solutions, by.x = "solution_id", by.y="id", all=T)
+head(mergedata)
+
+intersect(names(solutions), names(reviews))
+mergedata2=merge(reviews, solutions, all=T)
+head(mergedata2)
+
+
+# quiz
+fileUrl <- "https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2Fss06hid.csv"
+download.file(fileUrl, destfile = "./getting and cleaning data/data/Fss06hid.csv")
+fss06 = read.csv("./getting and cleaning data/data/Fss06hid.csv")
+
+head(fss06)
+# households on greater than 10 acres who sold more than $10,000 worth of agriculture products
+# ACR = 3, AGS = 6
+
+
+agricultureLogical <- fss06$ACR==3 & fss06$AGS==6
+which(agricultureLogical)
+
+library(jpeg)
+fileUrl <- "https://d396qusza40orc.cloudfront.net/getdata%2Fjeff.jpg"
+download.file(fileUrl, destfile =  "./getting and cleaning data/data/Fjeff.jpg", mode = "wb")
+
+jeff=readJPEG("./getting and cleaning data/data/Fjeff.jpg", native = T)
+quantile(jeff, probs = c(0.3, 0.8))
+
+
+
+
+fileUrl1 <- "https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FGDP.csv"
+fileUrl2 <- "https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FEDSTATS_Country.csv"
+
+download.file(fileUrl1, destfile =  "./getting and cleaning data/data/FGDP.csv")
+download.file(fileUrl2, destfile =  "./getting and cleaning data/data/FEDSTATS_Country.csv")
+
+FGDP=read.csv( "./getting and cleaning data/data/FGDP.csv", skip=4)
+country=read.csv( "./getting and cleaning data/data/FEDSTATS_Country.csv")
+
+DT::datatable(FGDP)
+FGDP=FGDP[, c(1,2,4,5)]
+colnames(FGDP) <- c("CountryCode", "Rank", "Economy", "gdp")
+head(FGDP)
+tail(FGDP)
+
+DT::datatable(GDP)
+GDP=FGDP[1:190, ]
+head(GDP)
+
+
+mergedata=merge(GDP, country, by="CountryCode")
+nrow(mergedata)
+
+arrange(mergedata, desc(Rank))[13, ]
+
+
+
+gdp <- fread("./getting and cleaning data/data/FGDP.csv", skip=5,
+             nrows=190, select = c(1,2,4,5), col.names = c("CountryCode", "Rank", "Economy", "Total"))
+
+edu <- fread("./getting and cleaning data/data/FEDSTATS_Country.csv")
+mergedata <- merge(gdp, edu, by='CountryCode')
+arrangedata <- mergedata %>% arrange(desc(Rank)) 
+arrangedata$Economy[12]
+
+
+mergedata$`Income Group`=as.factor(mergedata$`Income Group`)
+str(mergedata$`Income Group`)
+mergedata %>%  group_by(`Income Group`) %>%
+        summarize(average=mean(Rank, na.rm = T))
+
+tapply(mergedata$Rank,mergedata$`Income Group` , mean)
