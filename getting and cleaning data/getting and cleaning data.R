@@ -814,3 +814,111 @@ mergedata %>%  group_by(`Income Group`) %>%
         summarize(average=mean(Rank, na.rm = T))
 
 tapply(mergedata$Rank,mergedata$`Income Group` , mean)
+
+
+#################################################################################################
+# day8
+
+# editing text variables 
+
+library(data.table)
+cameradata <- fread("./getting and cleaning data/data/cameras.csv") # location.1에서 . 생략되서 불러옴
+cameradata <- read.csv("./getting and cleaning data/data/cameras.csv")
+
+names(cameradata)
+tolower(names(cameradata)) # 소문자로 변환 
+
+toupper(names(cameradata)) # 대문자로 변환 
+
+
+# strsplit : 문자형 벡터를 기준에 따라 나누기 
+
+splitname <- strsplit(names(cameradata), "\\.") # . 기준으로 분리 
+splitname
+splitname[[6]]; names(cameradata)[6] 
+
+name1 <- c("Chulsu, Lee", "Sangdon, Lee", "Dongsu, kim")
+name_split <- strsplit(name1, split = ",") # , 기준으로 분리 
+name_split
+
+
+mylist <- list(letters=c("A", "b", "c"), numbers=1:3, matrix(1:25, ncol = 5))
+head(mylist)
+
+mylist[1]
+mylist$letters
+mylist[[1]]
+
+
+# sapply
+splitname[[6]]
+splitname[[6]][1]
+
+firstElement <- function(x){x[1]}
+splitname
+sapply(splitname, firstElement)
+
+reviews <- read.csv("./getting and cleaning data/data/reviews.csv")
+solutions <- read.csv("./getting and cleaning data/data/solutions.csv")
+
+
+# sub
+names(reviews)
+sub("_", "", names(reviews))
+
+        testName <- "this_is_a_test"
+sub("_", "", testName) # 요소에 여러개의 _가 있을 경우 첫번째 _만 제거 가능
+
+gsub("_", "", testName) # 전부 제거 가능 
+
+
+# grep, grepl : 패턴 매칭 함수  
+cameradata$intersection
+grep("Alameda", cameradata$intersection) # Alameda가 포함된 문자열 찾기 
+table(grepl("Alameda", cameradata$intersection)) # Alameda가 있을 경우 T, 없을 경우 F
+
+cameradata2 <- cameradata[!grepl("Alameda", cameradata$intersection), ] # Alameda가 없는 행만 filter
+head(cameradata2)
+
+cameradata3 <- cameradata[grepl("Alameda", cameradata$intersection), ] # Alameda가 있는 행만 filter
+cameradata3
+
+grep("Alameda", cameradata$intersection, value = T) # 값 전체를 보여줌 
+
+grep("JeffStreet", cameradata$intersection)
+
+length(grep("JeffStreet", cameradata$intersaction))
+
+
+
+
+
+
+library(stringr)
+
+nchar("Jeffrey Leek") # 문자열 갯수 파악
+
+substr("Jeffrey Leek", 1, 7) # 문자열 부분 선택
+
+paste("Jeffrey", "Leek") 
+paste0("Jeffrey", "Leek") 
+
+
+name <- str_c("Kim", "Lee", NULL, "Park") # 문자열 연결
+name
+
+name <- c("Kim", "Lee", NULL, "Park")
+str_length(name) # 문자열 길이 파악
+
+str_sub(name, 1, 2) # 부분 문자열 추출 
+
+str_dup(name, 3) # 문자열 복제
+
+str_trim("   LEE    ") # 공백 제거
+
+text <- c("I am a boy", "You are girl")
+word(text, 1) # 문장으로부터 첫 단어 추출 
+word(text, 2) # 문장으로부터 두번째 단어 추출 
+word(text, start=2, end=-1) # 문장으로부터 두번째 단어 추출 
+
+
