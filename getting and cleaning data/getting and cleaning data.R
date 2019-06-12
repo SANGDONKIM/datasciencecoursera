@@ -896,6 +896,21 @@ length(grep("JeffStreet", cameradata$intersaction))
 
 library(stringr)
 
+# str_length : 문자의 수 (=nchar)
+# str_split : 문자열 분리 (=strsplit)
+# str_c : 문자열 연결 
+# str_detect : 문자열 패턴 인식해서 T/F 반환 
+# str_view_all : 매칭된 문자열 모두 보여줌
+
+# str_trim : 문자열의 선후 공백 제거
+# str_which : 문자열 벡터에서 일치하는 텍스트 패턴의 모든 위치 반환
+# str_extract()	: 각 문자열 요소에서 처음으로 일치하는 텍스트 패턴을 추출합니다.
+# str_extract_all() : 각 문자열 요소에서 일치하는 모든 텍스트 패턴을 추출합니다.
+# str_replace()	: 각 문자열 요소에서 처음으로 일치하는 텍스트 패턴을 원하는 문자열로 바꿉니다.
+# str_replace_all() : 각 문자열에서 일치한는 모든 텍스트 패턴을 원하는 문자열로 바꿉니다.
+
+
+
 nchar("Jeffrey Leek") # 문자열 갯수 파악
 
 substr("Jeffrey Leek", 1, 7) # 문자열 부분 선택
@@ -920,5 +935,147 @@ text <- c("I am a boy", "You are girl")
 word(text, 1) # 문장으로부터 첫 단어 추출 
 word(text, 2) # 문장으로부터 두번째 단어 추출 
 word(text, start=2, end=-1) # 문장으로부터 두번째 단어 추출 
+
+
+##############################################################################################
+# day9
+# regular expression : 텍스트의 특정 패턴을 찾아내기 위한 특수 문자열
+
+# "[abc]" :abc중 어느 하나라도 일치하는 문자 추출. 두개다 매칭 될 경우 추출 x 
+# "t[abc]e" : tae, tbe, tce 문자 모두 매칭 
+# "[abc]"와 "[bca]"는 같음. 순서 상관 x 
+
+library(stringr)
+
+fns <- c("fan", "fen", "fin", "fun", "fon")
+unlist(str_extract_all(fns, "f[aeiou]n"))
+
+fns <- c("fain", "fen", "fIn", "f0n", "fon")
+unlist(str_extract_all(fns, "f[aeiou]n")) # 두개 다 매칭될 경우 추출 x
+
+
+
+# metacharacter
+# ^i think : i think로 시작되는 문장 추출 
+# morning$ : morning으로 끝나는 문장 추출 
+# [Bb][Uu][Ss][Hh] : bush(대소문자 구분 없이)단어가 들어있는 문장 추출
+# ^[Ii] am : I or i(대소문자 구분 없이) am으로 시작하는 문장 추출
+# 9.11 : 9-11, 9/11, 169.1123, 9:11:46 AM, 911 등 전부 추출 
+# flood|fire : flood or fire이 있는 문자열 추출 
+# ^[Gg]ood|[Bb]ad : Good이나 good으로 시작되는 문자열 or Bad나 bad가 들어있는 문자열 추출(^이 없으므로) 
+# ^([Gg]ood|[Bb]ad) : Good, good, Bad, bad로 시작되는 문자열 추출 
+# [Gg]eorge( [Ww]\.)? [Bb]ush : g or George, b or BUSH 문자 사이에  W. or w.을 넣을지 option 
+# George W. Bush or George Bush or george bush ...등등
+# \.은 .을 메타문자로 고려하지 말라는 의미 
+# [0-9]+ (.*)[0-9]+
+# [Bb]ush( +[^ ]+ +){1,5} debate : bush space not space at least space debate
+
+
+
+# 정량자(Quantifilers)
+
+# * : 문자가 0번 이상 반복
+# + : 문자가 1번 이상 반복 
+# ? : 문자가 0회 혹은 1회 반복
+# {n} : 문자가 n번 반복
+# {n.} : 문자가 n번부터 무한반복
+# {n,m} : 문자가 n번에서 m번 반
+
+strings <- c("a", "ab", "acb", "accb", "acccb", "accccb")
+grep("ac*b", strings, value = T)
+unlist(str_extract_all(strings, "ac*b"))
+
+grep("ac+b", strings, value = T)
+grep("ac?b", strings, value = T)
+grep("ac{2}b", strings, value = T)
+grep("ac{2,}b", strings, value = T)
+grep("ac{2,3}b", strings, value = T)
+
+
+# character Classes with []
+# "-"은 문자열의 범위를 의미
+uppercase <- "[A-Z]"
+lowercase <- "[a-z]"
+number <- "[0-9]"
+
+triplets <- c("bts", "the", "BTS", "The", "010", "070") 
+
+# 3개의 연속된 소문자
+unlist(str_extract_all(triplets, "[a-z][a-z][a-z]"))
+unlist(str_extract_all(triplets, "[a-z]{3}"))
+
+# 3개의 연속된 대문자
+unlist(str_extract_all(triplets, "[A-Z]{3}"))  
+
+# 대문자로 시작하고 소문자 1회 이상
+unlist(str_extract_all(triplets, "[A-Z][a-z]+"))  
+
+# 연속된 숫자 1회이상, 숫자로 종결
+unlist(str_extract_all(triplets, "[0-9]+$"))  
+
+# ^[0-9][a-zA-Z] # 문장이 숫자로 시작, 그다음 문자(대소문자 구분 없이)로 시작
+# [^?.]$ : .이나 ?로 끝나지 않는 문자열 추출 
+
+# 부정 문자집합
+# 문자집합의 일부가 아닌 문자를 찾아내야 하는 경우
+
+# "^" (caret) 
+# 문자 집합 안의 첫번째 위치에 "^"을 사용할 경우
+# "[^a-z]" : 소문자를 제외한 모든 문자
+
+triplets <- c("bts", "the", "BTS", "The", "010", "070", ":~)", "^^;") 
+
+# 문자 및 숫자 이외의 문자가 1회 이상 매칭되는 모든 요소 
+unlist(str_extract_all(triplets, "[^a-zA-Z0-9]{1,}"))
+
+# "^"이 문자집합 안에 처음으로 오는 경우만 부정을 의미함
+
+# 문자, 숫자, ^이 한번 이상 연결되는 문자열 매칭
+unlist(str_extract_all(triplets, "[a-zA-Z0-9^]+"))
+
+
+# 문자 집합 안에 메타 문자
+
+fnx <- c("fan", "fin", "fun", "f0n", "f.n", "f1n", "fain")
+
+# f와 n 사이에 .이 있는 문자 추출
+unlist(str_extract_all(fnx, "f\\.n"))
+unlist(str_extract_all(fnx, "f[.]n"))
+
+
+# 문자 클래스 
+# \\d : 임의의 숫자 = [0-9]
+# \\D : 임의의 숫자 이외의 문자 = [^0-9]
+# \\w : 밑줄 문자 "_"를 포함하여 영어단어의 일부로 간주하는 문자 = [a-zA-Z0-9_]
+# \\W : 영어단어의 일부로 간주되지 않는 문자 = [^a-zA-Z0-9_]
+# \\s : 공백 문자 = [\f\n\r\t\v]
+# \\S : 비공백 문자 = [^\f\n\r\t\v]
+
+# 3개의 임의의 숫자로 연결된 패턴 
+unlist(str_extract_all(triplets, "\\d{3}"))
+
+# 1개 이상의 연속된 비 숫자 패턴
+unlist(str_extract_all(triplets, "\\D+"))
+
+# 1개 이상의 연속된 문자 또는 숫자
+unlist(str_extract_all(triplets, "\\w+"))
+
+# 1개 이상의 연속된 영어단어 또는 숫자로 간주되지 않는 문자
+unlist(str_extract_all(triplets, "\\W+"))
+
+# 1개 이상의 연속된 공백이 있는 문자
+unlist(str_extract_all(triplets, "\\s+"))
+
+# 1개 이상의 연속된 비공백 문자 
+unlist(str_extract_all(triplets, "\\S+"))
+
+
+# 공백을 나타내는 문자 표시 
+# \f : 페이지 넘김
+# \n : 줄바꿈 
+# \r : 줄의 처음으로 돌아가라는 기호 
+# \t : 텝 
+# \v : 수직 텝 
+
 
 
