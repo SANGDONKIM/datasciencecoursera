@@ -1078,4 +1078,114 @@ unlist(str_extract_all(triplets, "\\S+"))
 # \v : 수직 텝 
 
 
+###############################################################################################
+# day9
 
+d1 <- date()
+d1
+
+class(d1) # character
+
+d2 <- Sys.Date()
+d2
+
+class(d2) # date
+
+# formatting dates
+
+# %Y: 4자리 년도
+# %y: 2자리 년도
+# %m: 2자리 숫자로 된 월 
+# %B: 전체 월 이름("January")
+# %b: 축약된 월 이름("Jan")
+# %d: 2자리 일(0-31)
+# %a: 한글자 요일 
+# %A: 세글자 요일 
+# %H: 시
+# %M: 분
+# %S: 초
+
+
+format(d2, "%a %b %d")
+
+# creating dates
+x=c("1jan1960", "2jan1960", "31mar1960", "30jul1960"); z=as.Date(x, format="%d%b%Y")
+z # system language에 따라 NA가 나올 수 있음 
+
+
+
+library(lubridate)
+ymd("20140108")
+mdy("08/04/2013")
+dmy("03-04-2013")
+
+ymd_hms("2011-08-03 10:15:03")
+ymd_hms("2011-08-03 10:15:03", tz="Pacific/Auckland")
+
+x=dmy(c("1jan2013", "2jan2013", "31mar2013", "30jul2013"))
+wday(x[1])
+wday(x[1], label = T)
+
+
+
+# datasets 사이트 
+# stanford large newtork data
+# KDD Nugets datasets
+# CMU Statlib
+# Gene expression omnibus
+# ArXiv Data
+# Public Data Sets on Amazon Web Services 
+
+
+
+# quiz 
+
+#1
+library(data.table)
+survey <- fread("./getting and cleaning data/data/Fss06hid.csv")
+
+splitname <- strsplit(names(survey), "wgtp")
+splitname[[123]]
+
+
+#2
+
+gdp <- fread("./getting and cleaning data/data/FGDP.csv", skip=5,
+             nrows=190, select = c(1,2,4,5), col.names = c("CountryCode", "Rank", "Economy", "Total"))
+gdp=gdp[-1, ]
+gdp
+
+gdp$Total=gsub(",", "", gdp$Total)
+gdp$Total=as.integer(gdp$Total)
+mean(gdp$Total, na.rm = T)
+
+
+#3
+grep("United", gdp$Economy)
+
+
+#4
+country <- fread("./getting and cleaning data/data/FEDSTATS_Country.csv")
+
+head(country)
+names(country)
+names(gdp)
+mergedata <- merge(gdp, country, by="CountryCode")
+names(mergedata)
+
+grep("Fiscal year end: June", mergedata$`Special Notes`)
+
+library(quantmod)
+amzn = getSymbols("AMZN",auto.assign=FALSE)
+sampleTimes = index(amzn)
+sampleTimes
+
+str(sampleTimes)
+
+grep("^2012", sampleTimes)
+?NROW
+NROW(grep("^2012", sampleTimes)) # 벡터와 행렬에 모두 사용 가능 
+nrow(grep("^2012", sampleTimes)) # 행렬에만 사용 가능 
+
+date2012 <- sampleTimes[grep("^2012", sampleTimes)]
+NROW(date2012[weekdays(date2012)=="월요일"])
