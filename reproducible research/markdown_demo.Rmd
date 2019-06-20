@@ -1,0 +1,92 @@
+
+My first R markdown file 
+============================
+
+This is my first R markdown file.
+
+Here, we're load some data.
+
+```{r}
+library(datasets)
+data("airquality")
+summary(airquality)
+```
+
+Let's first made a pairs plot of data.
+
+```{r}
+pairs(airquality)
+```
+
+Here's a regression model of ozone on wind, solar radiation, and temperature.
+
+```{r}
+library(stats)
+fit <- lm(Ozone~Wind+Solar.R+Temp, data=airquality)
+summary(fit)
+```
+
+Here's on unordered list:
+
+* First element 
+
+* Second element
+
+
+here is a code chunk
+
+```{r}
+set.seed(1)
+x <- rnorm(100)
+mean(x)
+```
+
+
+```{r, echo=FALSE}
+set.seed(1)
+x <- runif(100)
+mean(x)
+```
+
+
+Let's  simulate some data.
+```{r simulatedata, echo=F}
+x <- rnorm(100)
+y <- x+rnorm(100, sd=0.5)
+```
+Here is a scatterplot of the data
+
+```{r scatterplot, fig.height=6}
+par(mar=c(5,4,1,1), las=1)
+plot(x, y, main="My simulated data")
+```
+
+
+# Make table with xtable
+
+## introduction 
+
+```{r fitmodel}
+fit <- lm(Ozone~Wind+Temp+Solar.R, data=airquality)
+```
+
+Here is a table of regression coefficients
+
+```{r showtable, results="asis"}
+library(xtable)
+xt <- xtable(summary(fit), align=c("c", "c", "c", "c", "c"))
+print(xt, type="html")
+```
+
+
+
+what if one cunk takes a long time to run?
+All chunks have to be re-computed every time you re-knit the file
+the cache=T option can be set on a chunk-by-chunk basis to store results of computation
+
+If the data or code changes, you need to re-run the cached code chunks 
+```{r showtable1, results="asis", cache=T}
+library(xtable)
+xt <- xtable(summary(fit), align=c("c", "c", "c", "c", "c"))
+print(xt, type="html")
+```
