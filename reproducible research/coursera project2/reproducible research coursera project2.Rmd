@@ -1,0 +1,83 @@
+---
+title: "reproducible research assignment 2"
+author: "Sang Don"
+date: "2019년 6월 22일"
+output: html_document
+---
+
+# NOAA storm data analysis 
+
+
+## Question 
+
+1. Across the United States, which types of events are most harmful with respect to population health?
+2. Across the United States, which types of events have the greatest economic consequences?
+
+## load the package
+```{r package}
+library(DT)
+library(R.utils)
+library(tidyverse)
+```
+
+
+## load the data
+
+```{r load data}
+fileUrl <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2"
+download.file(fileUrl, destfile =  "./reproducible research/data/FStormData.csv.bz2")
+stormdata <- fread("./reproducible research/data/FStormData.csv.bz2")
+```
+
+```{r data processing}
+glimpse(stormdata)
+table(is.na(stormdata))
+
+apply(stormdata, 2, function(x) sum(is.na(x)))
+```
+
+
+## Variable description
+
+* STATE__ : 
+* BGN_DATE
+* BGN_TIME
+* TIME_ZONE
+* COUNTY
+* COUNTYNAME
+* STATE      
+* EVTYPE
+* BGN_RANGE
+* BGN_AZI
+* BGN_LOCATI
+* END_DATE
+* END_TIME
+* COUNTY_END
+* COUNTYENDN
+* END_RANGE
+* END_AZI
+* END_LOCATI
+* LENGTH
+* WIDTH
+* F
+* MAG
+* FATALITIES
+* INJURIES
+* PROPDMG
+* PROPDMGEXP
+* CROPDMG
+* CROPDMGEXP
+* WFO
+* STATEOFFIC
+* ZONENAMES
+* LATITUDE
+* LONGITUDE
+* LATITUDE_E
+* LONGITUDE_ 
+* REMARKS
+* REFNUM    
+> 
+
+
+
+
