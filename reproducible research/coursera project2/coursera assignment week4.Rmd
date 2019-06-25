@@ -1,0 +1,188 @@
+---
+title: "Coursera reproducible research week4 project"
+author: "Sang Don"
+date: "2019년 6월 25일"
+output: html_document
+---
+
+## synopsis 
+
+Storms and other severe weather events can cause both public health and economic problems for communities and municipalities. Many severe events can result in fatalities, injuries, and property damage, and preventing such outcomes to the extent possible is a key concern. This project involves exploring the U.S. National Oceanic and Atmospheric Administration’s (NOAA) storm database. This database tracks characteristics of major storms and weather events in the United States, including when and where they occur, as well as estimates of any fatalities, injuries, and property damage. The analysis answers the following two questions: 
+
+
+* Across the United States, which types of events are most harmful with respect to population health?
+* Across the United States, which types of events have the greatest economic consequences?
+
+
+
+
+
+## Load the package 
+
+```{r load the package}
+library(data.table)
+library(tidyverse)
+library(gridExtra)
+Sys.setlocale('LC_ALL','C')
+```
+
+
+
+
+
+## Read the data
+
+```{r read the data, eval=TRUE}
+fileUrl <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2"
+if(!file.exists("./stormdata.csv.bz2")) {
+        download.file(fileUrl, destfile = "./stormdata.csv.bz2")
+}
+
+stormdata <- fread("./stormdata.csv.bz2")
+stormdata <- stormdata[, c(8, 23:28)]
+
+DT::datatable(stormdata)
+```
+
+
+
+
+
+## variable description 
+
+EVTYPE : event type
+FATALITIES : number of fatalities
+INJURIES : number of injuries 
+PROPDMG : the size of property damage
+PROPDMGEXP : the exponent values for property PROPDMG
+CROPDMG : the size of crop damage
+CROPDMGEXP : the exponent values for CROPDMG 
+
+
+
+
+## summary 
+
+```{r summary}
+glimpse(stormdata)
+summary(stormdata)
+
+apply(stormdata, 2, function(x) sum(is.na(x)))
+```
+
+
+
+
+
+## data processing
+
+I converted the PROPDMGEXP & CROPDMGEXP fields to numbers where H (hundreds = 10^2), K (thousands = 10^3), M (millions = 10^6), and B (billions = 10^9). But the case corresponding to the special symbol("+", "-", "?") is small, I did not convert it.
+
+
+
+
+
+```{r data processing}
+table(stormdata$PROPDMGEXP)
+table(stormdata$CROPDMGEXP)
+
+stormdata$EVTYPE <- toupper(stormdata$EVTYPE)
+
+stormdata <- stormdata %>%
+  mutate(PROPDMGEXP = toupper(PROPDMGEXP)) %>%
+  mutate(PROPERTYDAMAGE = ifelse(PROPDMGEXP == "H", PROPDMG * 1e2,
+                                 ifelse(PROPDMGEXP == "K", PROPDMG * 1e3,
+                                        ifelse(PROPDMGEXP == "M", PROPDMG * 1e6,
+                                               ifelse(PROPDMGEXP == "B", PROPDMG * 1e9, 0)))))
+
+stormdata <- stormdata %>%
+  mutate(CROPDMGEXP = toupper(CROPDMGEXP)) %>%
+  mutate(CROPDAMAGE = ifelse(CROPDMGEXP == "H", CROPDMG * 1e2,
+                                 ifelse(CROPDMGEXP == "K", CROPDMG * 1e3,
+                                        ifelse(CROPDMGEXP == "M", CROPDMG * 1e6,
+                                               ifelse(CROPDMGEXP == "B", CROPDMG * 1e9, 0)))))
+```
+
+
+
+
+
+## Public health impacts
+
+
+
+
+We extracted the top 10 weather factors that affect specific variables.
+
+
+```{r health plot}
+
+clean_data1 <- stormdata %>% 
+        group_by(EVTYPE) %>% 
+        summarize(FATALITIES=sum(FATALITIES)) %>%  
+        arrange(desc(FATALITIES)) %>% 
+        head(n=10)
+
+clean_data2 <-  stormdata %>% 
+        group_by(EVTYPE) %>% 
+        summarize(INJURIES=sum(INJURIES)) %>%  
+        arrange(desc(INJURIES)) %>% 
+        head(n=10)
+
+theme_set(theme_bw())
+
+g1=clean_data1 %>% ggplot(aes(x=reorder(EVTYPE, clean_data1$FATALITIES), y=FATALITIES))+
+        geom_bar(stat="identity", fill="orange")+coord_flip()+xlab("EVTYPE")+ggtitle("Fatalities by top 10 Weather Event Types")
+
+g2=clean_data2 %>% ggplot(aes(x=reorder(EVTYPE, clean_data2$INJURIES), y=INJURIES))+
+        geom_bar(stat="identity", fill="lightblue")+coord_flip()+xlab("EVTYPE")+ggtitle("Injuries by top 10 Weather Event Types")
+
+grid.arrange(g1, g2, ncol=1, nrow=2)
+```
+
+
+
+
+
+As a result, the tornado is the weather variable that gave the most damage to the facilities and Injuries.
+
+
+
+
+
+## Economic impacts
+
+
+
+We extracted the top 10 weather factors that affect specific variables.
+
+```{r economic plot}
+clean_data3 <- stormdata %>% 
+        group_by(EVTYPE) %>% 
+        summarize(PROPERTYDAMAGE=sum(PROPERTYDAMAGE)) %>% 
+        arrange(desc(PROPERTYDAMAGE)) %>% 
+        head(n=10)
+
+clean_data4 <- stormdata %>% 
+        group_by(EVTYPE) %>% 
+        summarize(CROPDAMAGE=sum(CROPDAMAGE)) %>% 
+        arrange(desc(CROPDAMAGE)) %>% 
+        head(n=10)
+
+
+
+g3=clean_data3 %>% ggplot(aes(x=reorder(EVTYPE, clean_data3$PROPERTYDAMAGE), y=PROPERTYDAMAGE))+
+        geom_bar(stat="identity", fill="rosybrown")+coord_flip()+xlab("EVTYPE")+ggtitle("property damaged by top 10 Weather Event Types")
+
+g4=clean_data4 %>% ggplot(aes(x=reorder(EVTYPE, clean_data4$CROPDAMAGE), y=CROPDAMAGE))+
+        geom_bar(stat="identity", fill="lightgreen")+coord_flip()+xlab("EVTYPE")+ggtitle("crop damaged by top 10 Weather Event Types")
+
+grid.arrange(g3, g4, ncol=1, nrow=2)
+
+```
+
+
+
+
+
+As a result, the most damaging weather variable for property is flood. And the most damaging weather variable for crops is drought.
